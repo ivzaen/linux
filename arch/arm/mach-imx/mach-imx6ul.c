@@ -1,19 +1,53 @@
-// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (C) 2015 Freescale Semiconductor, Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
  */
 #include <linux/irqchip.h>
 #include <linux/mfd/syscon.h>
 #include <linux/mfd/syscon/imx6q-iomuxc-gpr.h>
 #include <linux/micrel_phy.h>
+#include <linux/of_address.h>
 #include <linux/of_platform.h>
 #include <linux/phy.h>
 #include <linux/regmap.h>
 #include <asm/mach/arch.h>
 #include <asm/mach/map.h>
+#include <asm/system_info.h>
 
 #include "common.h"
 #include "cpuidle.h"
+
+#define OCOTP_CFG0	0x410
+#define OCOTP_CFG1	0x420
+
+static void imx6ul_get_serial(void)
+{
+	struct device_node *np;
+	void __iomem *base;
+
+	np = of_find_compatible_node(NULL, NULL, "fsl,imx6ul-ocotp");
+	if (!np) {
+		pr_warn("failed to find ocotp node\n");
+		return;
+	}
+
+	base = of_iomap(np, 0);
+	if (!base) {
+		pr_warn("failed to map ocotp\n");
+		goto put_node;
+	}
+
+	system_serial_high = readl_relaxed(base + OCOTP_CFG0);
+	system_serial_low = readl_relaxed(base + OCOTP_CFG1);
+
+	iounmap(base);
+
+put_node:
+	of_node_put(np);
+}
 
 static void __init imx6ul_enet_clk_init(void)
 {
@@ -25,6 +59,7 @@ static void __init imx6ul_enet_clk_init(void)
 				   IMX6UL_GPR1_ENET_CLK_OUTPUT);
 	else
 		pr_err("failed to find fsl,imx6ul-iomux-gpr regmap\n");
+
 }
 
 static int ksz8081_phy_fixup(struct phy_device *dev)
@@ -56,6 +91,7 @@ static inline void imx6ul_enet_init(void)
 static void __init imx6ul_init_machine(void)
 {
 	of_platform_default_populate(NULL, NULL, NULL);
+	imx6ul_get_serial();
 	imx6ul_enet_init();
 	imx_anatop_init();
 	imx6ul_pm_init();
@@ -79,7 +115,6 @@ static void __init imx6ul_init_late(void)
 
 static const char * const imx6ul_dt_compat[] __initconst = {
 	"fsl,imx6ul",
-	"fsl,imx6ull",
 	NULL,
 };
 
