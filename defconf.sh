@@ -1,0 +1,1 @@
+make -j8 ARCH=arm LOCALVERSION=ivz imx6_wirenboard_defconfig
