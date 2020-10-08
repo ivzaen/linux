@@ -2204,6 +2204,8 @@ static int imx_uart_probe_dt(struct imx_port *sport,
 	if (of_get_property(np, "rs485-rx-during-tx", NULL))
 		sport->port.rs485.flags |= SER_RS485_RX_DURING_TX;
 
+	if (of_property_read_bool(np, "linux,rs485-enabled-at-boot-time"))
+		sport->port.rs485.flags |= SER_RS485_ENABLED;
 	return 0;
 }
 #else
@@ -2277,7 +2279,7 @@ static int imx_uart_probe(struct platform_device *pdev)
 	sport->port.rs485_config = imx_uart_rs485_config;
 
 	sport->port.rs485.flags |=
-		SER_RS485_RTS_ON_SEND;
+		SER_RS485_RTS_ON_SEND | SER_RS485_RX_DURING_TX;
 	sport->port.flags = UPF_BOOT_AUTOCONF;
 	timer_setup(&sport->timer, imx_uart_timeout, 0);
 
