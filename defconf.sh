@@ -5,6 +5,6 @@ die() { echo -e "\e[31m$*\e[0m"; exit 1; }
 try() { "$@" || die "cannot $*"; }
 set -x
 
-if [ $# ]; then KERNEL_DEFCONFIG=$1; else KERNEL_DEFCONFIG=imx6_wirenboard_defconfig; fi
+if [ $1 ]; then KERNEL_DEFCONFIG=$1; else KERNEL_DEFCONFIG=imx6_wirenboard_defconfig; fi
 
 try make -j8 ARCH=arm LOCALVERSION=ivz $KERNEL_DEFCONFIG
