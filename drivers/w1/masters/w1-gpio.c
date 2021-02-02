@@ -26,17 +26,19 @@ static u8 w1_gpio_set_pullup(void *data, int delay)
 		pdata->pullup_duration = delay;
 	} else {
 		if (pdata->pullup_duration) {
+			pr_info("w1: begin w1_gpio_set_pullup\n");
 			/*
 			 * This will OVERRIDE open drain emulation and force-pull
 			 * the line high for some time.
 			 */
-			gpiod_set_raw_value(pdata->gpiod, 1);
+			gpiod_set_value(pdata->gpiod, 1);
 			msleep(pdata->pullup_duration);
 			/*
 			 * This will simply set the line as input since we are doing
 			 * open drain emulation in the GPIO library.
 			 */
-			gpiod_set_value(pdata->gpiod, 1);
+			gpiod_set_value(pdata->gpiod, 0);
+			pr_info("w1: end w1_gpio_set_pullup\n");
 		}
 		pdata->pullup_duration = 0;
 	}
@@ -52,17 +54,12 @@ static u8 w1_gpio_set_strong_pullup(void *data, int delay)
 		pdata->pullup_duration = delay;
 	} else {
 		if (pdata->pullup_duration) {
-			/*
-			 * This will OVERRIDE open drain emulation and force-pull
-			 * the line high for some time.
-			 */
-			gpiod_set_raw_value(pdata->strong_pullup_gpiod, 1);
+			/* Strong pull-up is supported as a push-pull, active high. */
+			pr_info("w1: begin w1_gpio_set_strong_pullup\n");
+			gpiod_set_value(pdata->strong_pullup_gpiod, 1);	/* activate pull-up */
 			msleep(pdata->pullup_duration);
-			/*
-			 * This will simply set the line as input since we are doing
-			 * open drain emulation in the GPIO library.
-			 */
-			gpiod_set_value(pdata->strong_pullup_gpiod, 1);
+			gpiod_set_value(pdata->strong_pullup_gpiod, 0);  /* deactivate */
+			pr_info("w1: end w1_gpio_set_strong_pullup\n");
 		}
 		pdata->pullup_duration = 0;
 	}

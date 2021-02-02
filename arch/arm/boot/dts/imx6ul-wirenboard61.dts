@@ -116,8 +116,10 @@
 		compatible = "w1-gpio";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_w1_gpio>;
+		status = "okay";
 
 		gpios = <&gpio1 11 0>;
+//		<&gpio1 13 GPIO_OPEN_DRAIN>;
 		pu-gpios = <&gpio1 13 0>;
 	};
 
@@ -126,6 +128,7 @@
 		compatible = "w1-gpio";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_w2_gpio>;
+		status = "okay";
 
 		gpios = <&gpio4 12 0>;
 		pu-gpios = <&gpio4 16 0>;

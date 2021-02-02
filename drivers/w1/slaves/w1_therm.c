@@ -1421,6 +1421,7 @@ static int read_powermode(struct w1_slave *sl)
 			 */
 			ret = w1_touch_bit(dev_master, 1);
 			/* ret should be either 1 either 0 */
+			pr_info("w1 read_powermode return %d\n", ret);
 		}
 	}
 	mutex_unlock(&dev_master->bus_mutex);
