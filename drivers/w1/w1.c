@@ -1064,6 +1064,8 @@ void w1_search_process_cb(struct w1_master *dev, u8 search_type,
 {
 	struct w1_slave *sl, *sln;
 
+	pr_info("w1: w1_search_process_cb search_type=%d.\n", search_type);
+
 	mutex_lock(&dev->list_mutex);
 	list_for_each_entry(sl, &dev->slist, w1_slave_entry)
 		clear_bit(W1_SLAVE_ACTIVE, &sl->flags);
@@ -1075,11 +1077,19 @@ void w1_search_process_cb(struct w1_master *dev, u8 search_type,
 	list_for_each_entry_safe(sl, sln, &dev->slist, w1_slave_entry) {
 		if (!test_bit(W1_SLAVE_ACTIVE, &sl->flags) && !--sl->ttl) {
 			mutex_unlock(&dev->list_mutex);
+			pr_info("w1: slave detach %s.\n", sl->name);
 			w1_slave_detach(sl);
 			mutex_lock(&dev->list_mutex);
 		}
-		else if (test_bit(W1_SLAVE_ACTIVE, &sl->flags))
+		else if (test_bit(W1_SLAVE_ACTIVE, &sl->flags)) {
+			pr_info("w1: set dev->slave_ttl %s.\n", sl->name);
 			sl->ttl = dev->slave_ttl;
+			if (sl->family->fops->read_powermode){
+				int ret;
+				ret = sl->family->fops->read_powermode(sl);
+				pr_info("w1: read_powermode return %d\n", ret);
+			}
+		}
 	}
 	mutex_unlock(&dev->list_mutex);
 
